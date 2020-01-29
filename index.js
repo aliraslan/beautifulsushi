@@ -61,7 +61,7 @@ const playMusic = async message => {
 client.on('message', async message => {
   try {
     const text = message.content.toLowerCase();
-    if (text.include 
+    if (text.includes(process.env.KEYWORD)) {
       if (
         text.includes('play') ||
         text.includes('pause') ||
