@@ -1,6 +1,7 @@
 'use strict';
 const Discord = require('discord.js');
 const axios = require('axios');
+const ffmpeg = require('ffmpeg-static');
 const ytdl = require('ytdl-core');
 const client = new Discord.Client();
 let dispatches = [];
