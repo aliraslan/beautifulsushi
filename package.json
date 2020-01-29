@@ -1,0 +1,19 @@
+{
+  "name": "beautifulsushi",
+  "version": "0.0.8",
+  "description": "A beautiful bot for beautiful people.",
+  "main": "index.js",
+  "author": "Raslan",
+  "license": "MIT",
+  "dependencies": {
+    "@discordjs/opus": "^0.1.0",
+    "axios": "^0.19.2",
+    "discord.js": "^11.5.1",
+    "micro": "^9.3.4",
+    "node-opus": "^0.3.3",
+    "ytdl-core": "^1.0.7"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
