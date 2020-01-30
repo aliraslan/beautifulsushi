@@ -18,10 +18,22 @@ let dispatches = [];
  * @param {DiscordMessage} message
  */
 const sendUnsplash = async message => {
+  const text = message.content.toLowerCase();
+  const searchTerm = text.includes('sushi show me ')
+    ? text
+        .substring(text.indexOf('sushi show me ') + 'sushi show me '.length)
+        .split(' ')
+        .join(',')
+    : text.includes('sushi send ')
+    ? text
+        .substring(text.indexOf('sushi send ') + 'sushi send '.length)
+        .split(' ')
+        .join(',')
+    : 'sushi';
   await message.channel.send({
     files: [
       {
-        attachment: 'https://source.unsplash.com/random/?sushi',
+        attachment: `https://source.unsplash.com/random/?${searchTerm}`,
         name: 'beautifulsushi.jpeg'
       }
     ]
@@ -50,8 +62,11 @@ const playMusic = async message => {
         dispatcher.destroy();
         dispatches = [];
       }
-      // Extract search string from command
-      const searchString = text.substring(text.indexOf('play') + 5);
+      // Extract search string from command, if none is found play some jazz.
+      const searchString =
+        text === 'sushi play' || text.includes('play sushi')
+          ? 'late night piano'
+          : text.substring(text.indexOf('play') + 5);
       /**
        * @description Holds the data for the YouTube API
        * @property {baseUrl}: The base URL for the YouTube API
@@ -109,10 +124,6 @@ const playMusic = async message => {
         });
       });
     } else if (text.includes('stop')) {
-      client.voiceConnections.forEach(connection => {
-        console.log(`${connection}\n\n`);
-      });
-      console.log(client.voiceConnections);
       // Kill dispatch
       if (dispatches.length) {
         const dispatcher = dispatches.pop();
