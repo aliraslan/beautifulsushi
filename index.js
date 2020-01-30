@@ -37,17 +37,19 @@ const playMusic = async message => {
       const videoId = res.data.items[0].id.videoId;
       voiceChannel.join().then(connection => {
         message.reply(`Alright!`);
-        if (dispatches.length) {
-          const dispatcher = dispatches.pop();
-          dispatcher.destroy();
-        }
         const stream = ytdl(`https://www.youtube.com/watch?v=${videoId}`, {
           filter: 'audioonly'
         });
+        if (dispatches.length) {
+          const dispatchToKill = dispatches.pop();
+          dispatchToKill.destroy();
+          dispatches = [];
+        }
         const dispatcher = connection.playStream(stream);
         dispatches.push(dispatcher);
         dispatcher.on('end', () => {
-          dispatches.pop(dispatcher);
+          dispatcher.destroy();
+          dispatches = [];
           voiceChannel.leave();
         });
       });
@@ -55,6 +57,7 @@ const playMusic = async message => {
       if (dispatches.length) {
         const dispatcher = dispatches.pop();
         dispatcher.destroy();
+        dispatches = [];
       }
     }
   } catch (error) {
