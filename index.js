@@ -36,17 +36,12 @@ const playMusic = async message => {
       const res = await axios.get(apiUrl);
       const videoId = res.data.items[0].id.videoId;
       voiceChannel.join().then(connection => {
-        message.channel.send(
-          `Alright, playing ${res.data.items[0].snippet.title}`,
-          {
-            files: [
-              {
-                attachment: `${res.data.items[0].snippet.thumbnails.medium.url}`,
-                name: 'beautifulsushi.jpeg'
-              }
-            ]
-          }
-        );
+        const playingEmbed = new Discord.RichEmbed()
+          .setColor('#aa0000')
+          .setTitle(`${res.data.items[0].snippet.title}`)
+          .setURL(`https://www.youtube.com/watch?v=${videoId}`)
+          .setImage(`res.data.items[0].snippet.thumbnails.medium.url`);
+        message.reply(playingEmbed);
         const stream = ytdl(`https://www.youtube.com/watch?v=${videoId}`, {
           filter: 'audioonly'
         });
