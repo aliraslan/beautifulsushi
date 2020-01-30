@@ -15,7 +15,7 @@ let dispatches = [];
 
 const helpMessage = async message => {
   const reply = `Hey! These are the commands!\n\`\`\`sushi\`\`\`: Shows a random picture of sushi.\n\`\`\`sushi show me search term\`\`\` or \`\`\`sushi send search term\`\`\`: Shows a random picture fitting the search term.\n\`\`\`sushi play\`\`\`: Plays some piano music.\n\`\`\`sushi play something\`\`\`: Searches for 'something' on YouTube and plays that.\n\`\`\`sushi stop\`\`\`: Stops any playing music.`;
-  message.reply(reply);
+  message.channel.send(reply);
 };
 
 /**
@@ -144,12 +144,14 @@ const playMusic = async message => {
 
 client.on('message', async message => {
   try {
-    const text = message.content.toLowerCase();
-    if (text.includes(process.env.KEYWORD)) {
-      if (text.includes('help')) await helpMessage(message);
-      else if (text.includes('play') || text.includes('stop'))
-        await playMusic(message);
-      else await sendUnsplash(message);
+    if (message.author.id !== client.user.id) {
+      const text = message.content.toLowerCase();
+      if (text.includes(process.env.KEYWORD)) {
+        if (text.includes('help')) await helpMessage(message);
+        else if (text.includes('play') || text.includes('stop'))
+          await playMusic(message);
+        else await sendUnsplash(message);
+      }
     }
   } catch (error) {
     console.log(error);
