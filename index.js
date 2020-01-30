@@ -8,7 +8,6 @@ const ytdl = require('ytdl-core');
 
 // Initialization
 const client = new Discord.Client();
-
 /**
  * @description Holds all the current locations where the bot is connected
  */
@@ -98,9 +97,7 @@ const playMusic = async message => {
         });
         // Start playing the music.
         const dispatcher = connection.playStream(stream);
-        client.user.setActivity(`${video.snippet.title}`, {
-          type: 'STREAMING'
-        });
+        client.user.setActivity(`${video.snippet.title}`);
         // Tracking the current dispatched stream in dispatches array.
         dispatches.push(dispatcher);
         // When song ends, leave.
@@ -112,6 +109,10 @@ const playMusic = async message => {
         });
       });
     } else if (text.includes('stop')) {
+      client.voiceConnections.forEach(connection => {
+        console.log(`${connection}\n\n`);
+      });
+      console.log(client.voiceConnections);
       // Kill dispatch
       if (dispatches.length) {
         const dispatcher = dispatches.pop();
