@@ -98,6 +98,9 @@ const playMusic = async message => {
         });
         // Start playing the music.
         const dispatcher = connection.playStream(stream);
+        client.user.setActivity(`${video.snippet.title}`, {
+          type: 'STREAMING'
+        });
         // Tracking the current dispatched stream in dispatches array.
         dispatches.push(dispatcher);
         // When song ends, leave.
@@ -105,6 +108,7 @@ const playMusic = async message => {
           dispatcher.destroy();
           dispatches = [];
           voiceChannel.leave();
+          client.user.setActivity('世界一周', { type: 'WATCHING' });
         });
       });
     } else if (text.includes('stop')) {
@@ -113,6 +117,7 @@ const playMusic = async message => {
         const dispatcher = dispatches.pop();
         dispatcher.destroy();
         dispatches = [];
+        client.user.setActivity('世界一周', { type: 'WATCHING' });
       }
     }
   } catch (error) {
