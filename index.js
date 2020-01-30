@@ -87,7 +87,7 @@ const playMusic = async message => {
           .setColor('#e0aca8')
           .setTitle(`${video.snippet.title}`)
           .setURL(`https://www.youtube.com/watch?v=${videoId}`)
-          .setThumbnail(`${video.snippet.thumbnails.medium.url}`)
+          .setImage(`${video.snippet.thumbnails.medium.url}`)
           .setTimestamp();
 
         // Send the Embed
