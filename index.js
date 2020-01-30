@@ -22,6 +22,11 @@ const playMusic = async message => {
     if (!voiceChannel)
       return message.reply('Please join a voice channel first!');
     if (text.includes('play')) {
+      if (dispatches.length) {
+        const dispatcher = dispatches.pop();
+        dispatcher.destroy();
+        dispatches = [];
+      }
       const searchString = text.substring(text.indexOf('play') + 5);
       const api = {
         baseUrl: 'https://www.googleapis.com/youtube/v3/search?',
