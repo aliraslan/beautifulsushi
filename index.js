@@ -14,7 +14,7 @@ const client = new Discord.Client();
 let dispatches = [];
 
 const helpMessage = async message => {
-  const reply = `Hey! These are the commands!\n\`\`\`sushi\`\`\`: Shows a random picture of sushi.\n\`\`\`sushi show me search term\`\`\` or \`\`\`sushi send search term\`\`\`: Shows a random picture fitting the search term.\n\`\`\`sushi play\`\`\`: Plays some piano music.\n\`\`\`sushi play something\`\`\`: Searches for 'something' on YouTube and plays that.\n\`\`\`sushi stop\`\`\`: Stops any playing music.`;
+  const reply = `Hey! These are the commands!\n\`sushi\`: Shows a random picture of sushi.\n\`sushi show me search term\` or \`sushi send search term\`: Shows a picture fitting search term.\n\`sushi play\`: Plays some piano music.\n\`sushi play something\`: Searches for 'something' on YouTube and plays that.\n\`sushi stop\`: Stops any playing music.`;
   message.channel.send(reply);
 };
 
