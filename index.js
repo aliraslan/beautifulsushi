@@ -37,6 +37,10 @@ const playMusic = async message => {
       const videoId = res.data.items[0].id.videoId;
       voiceChannel.join().then(connection => {
         message.reply(`Alright!`);
+        if (dispatches.length) {
+          const dispatcher = dispatches.pop();
+          dispatcher.destroy();
+        }
         const stream = ytdl(`https://www.youtube.com/watch?v=${videoId}`, {
           filter: 'audioonly'
         });
