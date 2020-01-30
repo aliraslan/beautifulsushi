@@ -36,12 +36,17 @@ const playMusic = async message => {
       const res = await axios.get(apiUrl);
       const videoId = res.data.items[0].id.videoId;
       voiceChannel.join().then(connection => {
-        message.reply(`Alright! Playing ${res.data.items[0].snippet.title}`,files: [
+        message.channel.send(
+          `Alright, playing ${res.data.items[0].snippet.title}`,
           {
-            attachment: `${res.data.items[0].snippet.thumbnails.medium.url}`,
-            name: 'beautifulsushi.jpeg'
+            files: [
+              {
+                attachment: `${res.data.items[0].snippet.thumbnails.medium.url}`,
+                name: 'beautifulsushi.jpeg'
+              }
+            ]
           }
-        ]);
+        );
         const stream = ytdl(`https://www.youtube.com/watch?v=${videoId}`, {
           filter: 'audioonly'
         });
