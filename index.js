@@ -124,11 +124,7 @@ client.on('message', async message => {
   try {
     const text = message.content.toLowerCase();
     if (text.includes(process.env.KEYWORD)) {
-      if (
-        text.includes('play') ||
-        text.includes('pause') ||
-        text.includes('stop')
-      )
+      if (text.includes('play') || text.includes('stop'))
         await playMusic(message);
       else await sendUnsplash(message);
     }
