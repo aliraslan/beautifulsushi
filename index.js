@@ -45,8 +45,10 @@ const playMusic = async message => {
           .setColor('#aa0000')
           .setTitle(`${res.data.items[0].snippet.title}`)
           .setURL(`https://www.youtube.com/watch?v=${videoId}`)
-          .setImage(`res.data.items[0].snippet.thumbnails.medium.url`);
-        message.reply(playingEmbed);
+          .setThumbnail(`res.data.items[0].snippet.thumbnails.medium.url`)
+          .setImage(`res.data.items[0].snippet.thumbnails.medium.url`)
+          .setTimestamp();
+        message.channel.send(playingEmbed);
         const stream = ytdl(`https://www.youtube.com/watch?v=${videoId}`, {
           filter: 'audioonly'
         });
