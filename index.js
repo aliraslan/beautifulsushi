@@ -50,11 +50,7 @@ const playMusic = async message => {
         const stream = ytdl(`https://www.youtube.com/watch?v=${videoId}`, {
           filter: 'audioonly'
         });
-        if (dispatches.length) {
-          const dispatchToKill = dispatches.pop();
-          dispatchToKill.destroy();
-          dispatches = [];
-        }
+        if (dispatches.length) dispatches.pop();
         const dispatcher = connection.playStream(stream);
         dispatches.push(dispatcher);
         dispatcher.on('end', () => {
