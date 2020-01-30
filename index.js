@@ -32,7 +32,7 @@ const playMusic = async message => {
         baseUrl: 'https://www.googleapis.com/youtube/v3/search?',
         part: 'snippet',
         type: 'video',
-        order: 'viewCount',
+        order: 'relevance',
         maxResults: 1,
         q: searchString,
         key: process.env.KEY
