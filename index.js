@@ -142,7 +142,6 @@ const playMusic = async message => {
               dispatches.clear();
               voiceChannel.leave();
               client.user.setActivity('世界一周', { type: 'WATCHING' });
-              break;
             }
           });
         });
