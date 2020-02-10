@@ -12,7 +12,9 @@ const client = new Discord.Client();
  * @description Holds all the current locations where the bot is connected
  */
 let dispatches = [];
-let servers = [];
+
+const songQueue = new Set();
+
 const helpMessage = async message => {
   const reply = `Hey! These are the commands!\n\`sushi\`: Shows a random picture of sushi.\n\`sushi show me search term\` or \`sushi send search term\`: Shows a picture fitting search term.\n\`sushi play\`: Plays some piano music.\n\`sushi play something\`: Searches for 'something' on YouTube and plays that.\n\`sushi stop\`: Stops any playing music.`;
   message.channel.send(reply);
@@ -156,13 +158,7 @@ const newPlayMusic = async (connection, message) => {
   if (!message.member.voiceChannel) {
     message.reply('Please join a voice channel first.');
   }
-  if (!servers[message.guild.id])
-    servers[message.guild.id] = {
-      queue: []
-    };
   if (text.includes('play')) {
-    const server = servers[message.guild.id];
-    // Normalize message content
     const searchString =
       text === 'sushi play'
         ? 'late night piano'
@@ -182,8 +178,8 @@ const newPlayMusic = async (connection, message) => {
     const response = await axios.get(apiUrl);
     // Extract first video object
     const video = response.data.items[0];
-    server.queue.push(video);
-    const nextUp = server.queue[0];
+    songQueue.add(video);
+    const nextUp = songQueue[0];
     // Create a youtube-dl stream to play
     const stream = ytdl(
       `https://www.youtube.com/watch?v=${nextUp.id.videoId}`,
@@ -192,13 +188,28 @@ const newPlayMusic = async (connection, message) => {
       }
     );
     server.dispatcher = connection.playStream(stream);
-    server.queue.shift();
+    // REMOVE FROM QUEUE
     server.dispatcher.on('end', () => {
-      if (server.queue[0]) newPlayMusic(connection, message);
+      songQueue.delete(video);
+      if (songQueue.size > 0) newPlayMusic(connection, message);
       else connection.disconnect();
     });
+  } else if (text.includes('queue')) {
+    if (songQueue.size) {
+      let queue = 'The current queue is: \n';
+      songQueue.forEach((song, index) => {
+        queue.concat(`\n${index + 1} - ${song.snippet.title}`);
+      });
+      message.reply(queue);
+    }
+  } else if (text.includes('stop')) {
+    if (message.guild.voiceConnection) {
+      songQueue.clear();
+      message.guild.voiceConnection.disconnect();
+    }
   }
 };
+
 client.on('message', async message => {
   try {
     if (message.author.id !== client.user.id) {
