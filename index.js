@@ -126,9 +126,9 @@ const playMusic = async message => {
         dispatcher.on('end', () => {
           // remove
           songQueue.splice(0, 1);
-          const queue = `The currently queue is ${songQueue
-            .split(',')
-            .join('\n')}`;
+          const queue = `The currently queue is ${songQueue.map(
+            i => i.snippet.title
+          )}`;
           message.reply(queue);
           dispatcher.destroy();
           dispatches = [];
