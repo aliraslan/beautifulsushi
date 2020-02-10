@@ -188,9 +188,9 @@ const newPlayMusic = async (connection, message) => {
           filter: 'audioonly'
         }
       );
-      server.dispatcher = connection.playStream(stream);
+      const dispatcher = connection.playStream(stream);
       // REMOVE FROM QUEUE
-      server.dispatcher.on('end', () => {
+      dispatcher.on('end', () => {
         songQueue.delete(video);
         if (songQueue.size > 0) newPlayMusic(connection, message);
         else connection.disconnect();
