@@ -12,7 +12,7 @@ const client = new Discord.Client();
  * @description Holds all the current locations where the bot is connected
  */
 let dispatches = [];
-
+let songQueue = [];
 const helpMessage = async message => {
   const reply = `Hey! These are the commands!\n\`sushi\`: Shows a random picture of sushi.\n\`sushi show me search term\` or \`sushi send search term\`: Shows a picture fitting search term.\n\`sushi play\`: Plays some piano music.\n\`sushi play something\`: Searches for 'something' on YouTube and plays that.\n\`sushi stop\`: Stops any playing music.`;
   message.channel.send(reply);
@@ -99,6 +99,8 @@ const playMusic = async message => {
       const video = response.data.items[0];
       // Extract ID
       const videoId = video.id.videoId;
+      // Add video to queue
+      songQueue.push(video);
       // Join the voice channel
       voiceChannel.join().then(connection => {
         // Create a Rich Embed to reply with.
@@ -122,6 +124,12 @@ const playMusic = async message => {
         dispatches.push(dispatcher);
         // When song ends, leave.
         dispatcher.on('end', () => {
+          // remove
+          songQueue.splice(0, 1);
+          const queue = `The currently queue is ${songQueue
+            .split(',')
+            .join('\n')}`;
+          message.reply(queue);
           dispatcher.destroy();
           dispatches = [];
           voiceChannel.leave();
@@ -131,10 +139,20 @@ const playMusic = async message => {
     } else if (text.includes('stop')) {
       // Kill dispatch
       if (dispatches.length) {
+        songQueue = [];
         const dispatcher = dispatches.pop();
         dispatcher.destroy();
         dispatches = [];
         client.user.setActivity('世界一周', { type: 'WATCHING' });
+      }
+    } else if (text.includes('queue')) {
+      if (!songQueue.length) {
+        message.reply('The queue is currently empty.');
+      } else {
+        const queue = `The currently queue is ${songQueue
+          .split(',')
+          .join('\n')}`;
+        message.reply(queue);
       }
     }
   } catch (error) {
