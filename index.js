@@ -190,7 +190,8 @@ client.on('message', async message => {
 client.on('ready', () => {
   console.log('Connected as ' + client.user.tag);
   client.user.setActivity('世界一周', { type: 'WATCHING' });
-  dispatches = [];
+  dispatches.clear();
+  songQueue.clear();
 });
 
 process.on('unhandledRejection', error =>
