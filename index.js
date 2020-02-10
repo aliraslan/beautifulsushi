@@ -193,7 +193,7 @@ const newPlayMusic = async (connection, message) => {
     );
     server.dispatcher = connection.playStream(stream);
     server.queue.shift();
-    server.dispatcher.on('end', () => {
+    server.dispatcher.on('end', async () => {
       if (server.queue[0]) await newPlayMusic(connection, message);
       else connection.disconnect();
     });
