@@ -12,7 +12,7 @@ const client = new Discord.Client();
  * @description Holds all the current locations where the bot is connected
  */
 let dispatches = [];
-
+let servers = [];
 const helpMessage = async message => {
   const reply = `Hey! These are the commands!\n\`sushi\`: Shows a random picture of sushi.\n\`sushi show me search term\` or \`sushi send search term\`: Shows a picture fitting search term.\n\`sushi play\`: Plays some piano music.\n\`sushi play something\`: Searches for 'something' on YouTube and plays that.\n\`sushi stop\`: Stops any playing music.`;
   message.channel.send(reply);
@@ -142,14 +142,82 @@ const playMusic = async message => {
   }
 };
 
+// const playingEmbed = new Discord.RichEmbed()
+// .setColor('#e0aca8')
+// .setTitle(`${video.snippet.title}`)
+// .setURL(`https://www.youtube.com/watch?v=${video.id.videoId}`)
+// .setImage(`${video.snippet.thumbnails.medium.url}`)
+// .setTimestamp();
+// // Send the Embed
+// message.channel.send(playingEmbed);
+
+const newPlayMusic = async (connection, message) => {
+  if (!message.member.voiceChannel) {
+    message.reply('Please join a voice channel first.');
+  }
+  if (!servers[message.guild.id])
+    servers[message.guild.id] = {
+      queue: []
+    };
+  if (text.includes('play')) {
+    const server = servers[message.guild.id];
+    // Normalize message content
+    const text = message.content.toLowerCase();
+    const searchString =
+      text === 'sushi play'
+        ? 'late night piano'
+        : text.substring(text.indexOf('play') + 5);
+    const api = {
+      baseUrl: 'https://www.googleapis.com/youtube/v3/search?',
+      part: 'snippet',
+      type: 'video',
+      order: 'relevance',
+      maxResults: 1,
+      q: searchString,
+      key: process.env.KEY
+    };
+    // Forming the URL from the properties.
+    const apiUrl = `${api.baseUrl}part=${api.part}&type=${api.type}&maxResults=${api.maxResults}&order=${api.order}&q=${api.q}&key=${api.key}`;
+    // Querying the URL to return the video(s).
+    const response = await axios.get(apiUrl);
+    // Extract first video object
+    const video = response.data.items[0];
+    server.queue.push(video);
+    const nextUp = server.queue[0];
+    // Create a youtube-dl stream to play
+    const stream = ytdl(
+      `https://www.youtube.com/watch?v=${nextUp.id.videoId}`,
+      {
+        filter: 'audioonly'
+      }
+    );
+    server.dispatcher = connection.playStream(stream);
+    server.queue.shift();
+    server.dispatcher.on('end', () => {
+      if (server.queue[0]) await newPlayMusic(connection, message);
+      else connection.disconnect();
+    });
+  }
+};
 client.on('message', async message => {
   try {
     if (message.author.id !== client.user.id) {
       const text = message.content.toLowerCase();
       if (text.includes(process.env.KEYWORD)) {
         if (text.includes('help')) await helpMessage(message);
-        else if (text.includes('play') || text.includes('stop'))
-          await playMusic(message);
+        else if (
+          text.includes('play') ||
+          text.includes('stop') ||
+          text.includes('queue') ||
+          text.includes('skip')
+        )
+          if (!message.member.voiceChannel) {
+            message.reply('You need to be in a voice channel to do that.');
+          } else {
+            message.member.voiceChannel
+              .join()
+              .then(connection => newPlayMusic(connection, message));
+          }
         else await sendUnsplash(message);
       }
     }
