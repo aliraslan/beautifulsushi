@@ -152,6 +152,7 @@ const playMusic = async message => {
 // message.channel.send(playingEmbed);
 
 const newPlayMusic = async (connection, message) => {
+  const text = message.content.toLowerCase();
   if (!message.member.voiceChannel) {
     message.reply('Please join a voice channel first.');
   }
@@ -162,7 +163,6 @@ const newPlayMusic = async (connection, message) => {
   if (text.includes('play')) {
     const server = servers[message.guild.id];
     // Normalize message content
-    const text = message.content.toLowerCase();
     const searchString =
       text === 'sushi play'
         ? 'late night piano'
