@@ -149,9 +149,9 @@ const playMusic = async message => {
       if (!songQueue.length) {
         message.reply('The queue is currently empty.');
       } else {
-        const queue = `The currently queue is ${songQueue
-          .split(',')
-          .join('\n')}`;
+        const queue = `The currently queue is ${songQueue.map(
+          i => i.snippet.title
+        )}`;
         message.reply(queue);
       }
     }
