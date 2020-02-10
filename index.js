@@ -154,59 +154,63 @@ const playMusic = async message => {
 // message.channel.send(playingEmbed);
 
 const newPlayMusic = async (connection, message) => {
-  const text = message.content.toLowerCase();
-  if (!message.member.voiceChannel) {
-    message.reply('Please join a voice channel first.');
-  }
-  if (text.includes('play')) {
-    const searchString =
-      text === 'sushi play'
-        ? 'late night piano'
-        : text.substring(text.indexOf('play') + 5);
-    const api = {
-      baseUrl: 'https://www.googleapis.com/youtube/v3/search?',
-      part: 'snippet',
-      type: 'video',
-      order: 'relevance',
-      maxResults: 1,
-      q: searchString,
-      key: process.env.KEY
-    };
-    // Forming the URL from the properties.
-    const apiUrl = `${api.baseUrl}part=${api.part}&type=${api.type}&maxResults=${api.maxResults}&order=${api.order}&q=${api.q}&key=${api.key}`;
-    // Querying the URL to return the video(s).
-    const response = await axios.get(apiUrl);
-    // Extract first video object
-    const video = response.data.items[0];
-    songQueue.add(video);
-    const nextUp = songQueue[0];
-    // Create a youtube-dl stream to play
-    const stream = ytdl(
-      `https://www.youtube.com/watch?v=${nextUp.id.videoId}`,
-      {
-        filter: 'audioonly'
-      }
-    );
-    server.dispatcher = connection.playStream(stream);
-    // REMOVE FROM QUEUE
-    server.dispatcher.on('end', () => {
-      songQueue.delete(video);
-      if (songQueue.size > 0) newPlayMusic(connection, message);
-      else connection.disconnect();
-    });
-  } else if (text.includes('queue')) {
-    if (songQueue.size) {
-      let queue = 'The current queue is: \n';
-      songQueue.forEach((song, index) => {
-        queue.concat(`\n${index + 1} - ${song.snippet.title}`);
+  try {
+    const text = message.content.toLowerCase();
+    if (!message.member.voiceChannel) {
+      message.reply('Please join a voice channel first.');
+    }
+    if (text.includes('play')) {
+      const searchString =
+        text === 'sushi play'
+          ? 'late night piano'
+          : text.substring(text.indexOf('play') + 5);
+      const api = {
+        baseUrl: 'https://www.googleapis.com/youtube/v3/search?',
+        part: 'snippet',
+        type: 'video',
+        order: 'relevance',
+        maxResults: 1,
+        q: searchString,
+        key: process.env.KEY
+      };
+      // Forming the URL from the properties.
+      const apiUrl = `${api.baseUrl}part=${api.part}&type=${api.type}&maxResults=${api.maxResults}&order=${api.order}&q=${api.q}&key=${api.key}`;
+      // Querying the URL to return the video(s).
+      const response = await axios.get(apiUrl);
+      // Extract first video object
+      const video = response.data.items[0];
+      songQueue.add(video);
+      const nextUp = songQueue[0];
+      // Create a youtube-dl stream to play
+      const stream = ytdl(
+        `https://www.youtube.com/watch?v=${nextUp.id.videoId}`,
+        {
+          filter: 'audioonly'
+        }
+      );
+      server.dispatcher = connection.playStream(stream);
+      // REMOVE FROM QUEUE
+      server.dispatcher.on('end', () => {
+        songQueue.delete(video);
+        if (songQueue.size > 0) newPlayMusic(connection, message);
+        else connection.disconnect();
       });
-      message.reply(queue);
+    } else if (text.includes('queue')) {
+      if (songQueue.size) {
+        let queue = 'The current queue is: \n';
+        songQueue.forEach((song, index) => {
+          queue.concat(`\n${index + 1} - ${song.snippet.title}`);
+        });
+        message.reply(queue);
+      }
+    } else if (text.includes('stop')) {
+      if (message.guild.voiceConnection) {
+        songQueue.clear();
+        message.guild.voiceConnection.disconnect();
+      }
     }
-  } else if (text.includes('stop')) {
-    if (message.guild.voiceConnection) {
-      songQueue.clear();
-      message.guild.voiceConnection.disconnect();
-    }
+  } catch (error) {
+    console.log(`Something wrong happened with YouTube.`);
   }
 };
 
