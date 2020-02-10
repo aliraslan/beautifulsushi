@@ -11,8 +11,8 @@ const client = new Discord.Client();
 /**
  * @description Holds all the current locations where the bot is connected
  */
-const dispatches = new Set();
-const songQueue = new Set();
+let dispatches = [];
+
 const helpMessage = async message => {
   const reply = `Hey! These are the commands!\n\`sushi\`: Shows a random picture of sushi.\n\`sushi show me search term\` or \`sushi send search term\`: Shows a picture fitting search term.\n\`sushi play\`: Plays some piano music.\n\`sushi play something\`: Searches for 'something' on YouTube and plays that.\n\`sushi stop\`: Stops any playing music.`;
   message.channel.send(reply);
@@ -65,7 +65,7 @@ const playMusic = async message => {
       if (dispatches.length) {
         const dispatcher = dispatches.pop();
         dispatcher.destroy();
-        dispatches.clear();
+        dispatches = [];
       }
       // Extract search string from command, if none is found play some jazz.
       const searchString =
@@ -97,73 +97,44 @@ const playMusic = async message => {
       const response = await axios.get(apiUrl);
       // Extract first video object
       const video = response.data.items[0];
-      // Add video to queue
-      songQueue.add(video);
-      do {
-        const currentlyPlaying = songQueue[0];
-        songQueue.delete(songQueue[0]);
-        // Join the voice channel
-        voiceChannel.join().then(connection => {
-          // Create a Rich Embed to reply with.
-          const playingEmbed = new Discord.RichEmbed()
-            .setColor('#e0aca8')
-            .setTitle(`${currentlyPlaying.snippet.title}`)
-            .setURL(
-              `https://www.youtube.com/watch?v=${currentlyPlaying.id.videoId}`
-            )
-            .setImage(`${currentlyPlaying.snippet.thumbnails.medium.url}`)
-            .setTimestamp();
-          // Send the Embed
-          message.channel.send(playingEmbed);
-          // Create a youtube-dl stream to play
-          const stream = ytdl(
-            `https://www.youtube.com/watch?v=${currentlyPlaying.id.videoId}`,
-            {
-              filter: 'audioonly'
-            }
-          );
-          // Start playing the music.
-          const dispatcher = connection.playStream(stream);
-          client.user.setActivity(`${currentlyPlaying.snippet.title}`);
-          // Tracking the current dispatched stream in dispatches array.
-          dispatches.add(dispatcher);
-          // When song ends, leave.
-          dispatcher.on('end', () => {
-            // remove
-            if (songQueue.size > 0) {
-              songQueue.splice(0, 1);
-              const queue = `The current queue is`;
-              songQueue.forEach((song, index) => {
-                queue.concat(`\n${index} - ${song.snippet.title}`);
-              });
-              message.reply(queue);
-            } else {
-              dispatcher.destroy();
-              dispatches.clear();
-              voiceChannel.leave();
-              client.user.setActivity('世界一周', { type: 'WATCHING' });
-            }
-          });
+      // Extract ID
+      const videoId = video.id.videoId;
+      // Join the voice channel
+      voiceChannel.join().then(connection => {
+        // Create a Rich Embed to reply with.
+        const playingEmbed = new Discord.RichEmbed()
+          .setColor('#e0aca8')
+          .setTitle(`${video.snippet.title}`)
+          .setURL(`https://www.youtube.com/watch?v=${videoId}`)
+          .setImage(`${video.snippet.thumbnails.medium.url}`)
+          .setTimestamp();
+
+        // Send the Embed
+        message.channel.send(playingEmbed);
+        // Create a youtube-dl stream to play
+        const stream = ytdl(`https://www.youtube.com/watch?v=${videoId}`, {
+          filter: 'audioonly'
         });
-      } while (songQueue.size > 1);
+        // Start playing the music.
+        const dispatcher = connection.playStream(stream);
+        client.user.setActivity(`${video.snippet.title}`);
+        // Tracking the current dispatched stream in dispatches array.
+        dispatches.push(dispatcher);
+        // When song ends, leave.
+        dispatcher.on('end', () => {
+          dispatcher.destroy();
+          dispatches = [];
+          voiceChannel.leave();
+          client.user.setActivity('世界一周', { type: 'WATCHING' });
+        });
+      });
     } else if (text.includes('stop')) {
       // Kill dispatch
       if (dispatches.length) {
-        songQueue = [];
         const dispatcher = dispatches.pop();
         dispatcher.destroy();
         dispatches = [];
         client.user.setActivity('世界一周', { type: 'WATCHING' });
-      }
-    } else if (text.includes('queue')) {
-      if (!songQueue.size) {
-        message.reply('The queue is currently empty.');
-      } else {
-        const queue = `The current queue is`;
-        songQueue.forEach((song, index) => {
-          queue.concat(`\n${index} - ${song.snippet.title}`);
-        });
-        message.reply(queue);
       }
     }
   } catch (error) {
@@ -190,8 +161,7 @@ client.on('message', async message => {
 client.on('ready', () => {
   console.log('Connected as ' + client.user.tag);
   client.user.setActivity('世界一周', { type: 'WATCHING' });
-  dispatches.clear();
-  songQueue.clear();
+  dispatches = [];
 });
 
 process.on('unhandledRejection', error =>
