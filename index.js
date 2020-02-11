@@ -115,6 +115,9 @@ const playMusic = async (connection, message) => {
         songQueue.clear();
         message.guild.voiceConnection.disconnect();
       }
+    } else if (text.includes('override')) {
+      songQueue.clear();
+      return;
     }
   } catch (error) {
     console.log(error);
