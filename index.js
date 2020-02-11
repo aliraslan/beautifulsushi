@@ -144,15 +144,6 @@ const playMusic = async message => {
   }
 };
 
-// const playingEmbed = new Discord.RichEmbed()
-// .setColor('#e0aca8')
-// .setTitle(`${video.snippet.title}`)
-// .setURL(`https://www.youtube.com/watch?v=${video.id.videoId}`)
-// .setImage(`${video.snippet.thumbnails.medium.url}`)
-// .setTimestamp();
-// // Send the Embed
-// message.channel.send(playingEmbed);
-
 const newPlayMusic = async (connection, message) => {
   try {
     const text = message.content.toLowerCase();
@@ -179,6 +170,7 @@ const newPlayMusic = async (connection, message) => {
       const response = await axios.get(apiUrl);
       // Extract first video object
       const video = response.data.items[0];
+      message.reply(`Alright! Adding ${video.snippet.title} to the queue.`);
       songQueue.add(video);
       const nextUp = songQueue[0];
       // Create a youtube-dl stream to play
@@ -188,11 +180,19 @@ const newPlayMusic = async (connection, message) => {
           filter: 'audioonly'
         }
       );
+      const playingEmbed = new Discord.RichEmbed()
+        .setColor('#e0aca8')
+        .setTitle(`${nextUp.snippet.title}`)
+        .setURL(`https://www.youtube.com/watch?v=${nextUp.id.videoId}`)
+        .setImage(`${nextUp.snippet.thumbnails.medium.url}`)
+        .setTimestamp();
+      // Send the Embed
+      message.channel.send(playingEmbed);
       const dispatcher = connection.playStream(stream);
       // REMOVE FROM QUEUE
       dispatcher.on('end', () => {
         songQueue.delete(video);
-        if (songQueue.size > 0) newPlayMusic(connection, message);
+        if (songQueue.size) newPlayMusic(connection, message);
         else connection.disconnect();
       });
     } else if (text.includes('queue')) {
