@@ -94,7 +94,7 @@ const playMusic = async (connection, message) => {
       dispatcher.on('end', () => {
         client.user.setActivity('世界一周', { type: 'WATCHING' });
         songQueue.delete(video);
-        if (songQueue.size) newPlayMusic(connection, message);
+        if (songQueue.size) playMusic(connection, message);
         else connection.disconnect();
       });
     } else if (text.includes('queue')) {
