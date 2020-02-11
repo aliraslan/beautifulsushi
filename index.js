@@ -133,7 +133,7 @@ client.on('message', async message => {
           } else {
             message.member.voiceChannel
               .join()
-              .then(connection => playMusic(connection, message));
+              .then(async connection => await playMusic(connection, message));
           }
         else await sendUnsplash(message);
       }
