@@ -116,7 +116,7 @@ const playMusic = async (connection, message) => {
       }
     }
   } catch (error) {
-    message.reply(`Something wrong happened with YouTube.`);
+    message.reply(error);
   }
 };
 
