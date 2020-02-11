@@ -146,7 +146,6 @@ client.on('message', async message => {
 client.on('ready', () => {
   console.log('Connected as ' + client.user.tag);
   client.user.setActivity('世界一周', { type: 'WATCHING' });
-  dispatches = [];
 });
 
 process.on('unhandledRejection', error =>
