@@ -50,7 +50,7 @@ const playMusic = async (currentlyPlaying, connection, message) => {
       message.reply('Please join a voice channel first.');
     }
     if (text.includes('play')) {
-      if (currentlyPlaying.snippet.title) {
+      if (currentlyPlaying.snippet) {
         const searchString =
           text === 'sushi play'
             ? 'late night piano'
