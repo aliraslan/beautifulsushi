@@ -50,31 +50,29 @@ const playMusic = async (connection, message) => {
       message.reply('Please join a voice channel first.');
     }
     if (text.includes('play')) {
-      if ([...songQueue][0]) {
-        // There's a song playing, possibly more in queue
-        const searchString =
-          text === 'sushi play'
-            ? 'late night piano'
-            : text.substring(text.indexOf('play') + 5);
-        const api = {
-          baseUrl: 'https://www.googleapis.com/youtube/v3/search?',
-          part: 'snippet',
-          type: 'video',
-          order: 'relevance',
-          maxResults: 1,
-          q: searchString,
-          key: process.env.KEY
-        };
-        // Forming the URL from the properties.
-        const apiUrl = `${api.baseUrl}part=${api.part}&type=${api.type}&maxResults=${api.maxResults}&order=${api.order}&q=${api.q}&key=${api.key}`;
-        // Querying the URL to return the video(s).
-        const response = await axios.get(apiUrl);
-        // Extract first video object
-        const video = response.data.items[0];
-        message.reply(`Alright! Adding ${video.snippet.title} to the queue.`);
-        songQueue.add(video);
-      }
+      const searchString =
+        text === 'sushi play'
+          ? 'late night piano'
+          : text.substring(text.indexOf('play') + 5);
+      const api = {
+        baseUrl: 'https://www.googleapis.com/youtube/v3/search?',
+        part: 'snippet',
+        type: 'video',
+        order: 'relevance',
+        maxResults: 1,
+        q: searchString,
+        key: process.env.KEY
+      };
+      // Forming the URL from the properties.
+      const apiUrl = `${api.baseUrl}part=${api.part}&type=${api.type}&maxResults=${api.maxResults}&order=${api.order}&q=${api.q}&key=${api.key}`;
+      // Querying the URL to return the video(s).
+      const response = await axios.get(apiUrl);
+      // Extract first video object
+      const video = response.data.items[0];
+      message.reply(`Alright! Adding ${video.snippet.title} to the queue.`);
+      songQueue.add(video);
       const nextUp = [...songQueue][0];
+      songQueue.delete(video);
       const playingEmbed = new Discord.RichEmbed()
         .setColor('#e0aca8')
         .setTitle(`${nextUp.snippet.title}`)
@@ -94,7 +92,6 @@ const playMusic = async (connection, message) => {
       const dispatcher = connection.playStream(stream);
       dispatcher.on('end', () => {
         client.user.setActivity('世界一周', { type: 'WATCHING' });
-        songQueue.delete(video);
         if (songQueue.size) playMusic(connection, message);
         else connection.disconnect();
       });
