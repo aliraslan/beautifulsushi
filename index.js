@@ -112,7 +112,7 @@ const playMusic = async (connection, message) => {
       }
     }
   } catch (error) {
-    console.log(`Something wrong happened with YouTube.`);
+    message.reply(`Something wrong happened with YouTube.`);
   }
 };
 
@@ -143,7 +143,7 @@ client.on('message', async message => {
 });
 
 client.on('ready', () => {
-  console.log('Connected as ' + client.user.tag);
+  message.reply('Connected as ' + client.user.tag);
   client.user.setActivity('世界一周', { type: 'WATCHING' });
 });
 
