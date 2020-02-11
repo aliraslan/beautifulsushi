@@ -106,7 +106,7 @@ const playMusic = async (connection, message) => {
         message.reply(queue);
       } else {
         message.reply(
-          'The queue is empty. You can add something with ```sushi play```.'
+          'The queue is empty. You can add something with `sushi play`.'
         );
       }
     } else if (text.includes('stop')) {
