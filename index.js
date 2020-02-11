@@ -9,7 +9,7 @@ const ytdl = require('ytdl-core');
 const client = new Discord.Client();
 
 // SongQueue
-const songQueue = new Set();
+let songQueue = new Set();
 
 const helpMessage = async message => {
   const reply = `Hey! These are the commands!\n\`sushi\`: Shows a random picture of sushi.\n\`sushi show me search term\` or \`sushi send search term\`: Shows a picture fitting search term.\n\`sushi play\`: Plays some piano music.\n\`sushi play something\`: Searches for 'something' on YouTube and plays that.\n\`sushi stop\`: Stops any playing music.`;
@@ -71,7 +71,7 @@ const playMusic = async (connection, message) => {
       const video = response.data.items[0];
       message.reply(`Alright! Adding ${video.snippet.title} to the queue.`);
       songQueue.add(video);
-      const nextUp = songQueue.values()[0];
+      const nextUp = [...songQueue][0];
       console.log(`nextUp is ${JSON.stringify(nextUp)}`);
       // Create a youtube-dl stream to play
       const stream = ytdl(
