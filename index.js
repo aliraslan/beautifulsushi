@@ -71,7 +71,7 @@ const playMusic = async (connection, message) => {
       const video = response.data.items[0];
       message.reply(`Alright! Adding ${video.snippet.title} to the queue.`);
       songQueue.add(video);
-      const nextUp = songQueue[0];
+      const nextUp = songQueue.values()[0];
       console.log(`nextUp is ${JSON.stringify(nextUp)}`);
       // Create a youtube-dl stream to play
       const stream = ytdl(
