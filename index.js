@@ -5,7 +5,6 @@
 const Discord = require('discord.js');
 const axios = require('axios');
 const ytdl = require('ytdl-core');
-
 // Initialization
 const client = new Discord.Client();
 
@@ -73,6 +72,7 @@ const playMusic = async (connection, message) => {
       message.reply(`Alright! Adding ${video.snippet.title} to the queue.`);
       songQueue.add(video);
       const nextUp = songQueue[0];
+      console.log(`nextUp is ${JSON.stringify(nextUp)}`);
       // Create a youtube-dl stream to play
       const stream = ytdl(
         `https://www.youtube.com/watch?v=${nextUp.id.videoId}`,
