@@ -125,8 +125,7 @@ client.on('message', async message => {
         else if (
           text.includes('play') ||
           text.includes('stop') ||
-          text.includes('queue') ||
-          text.includes('skip')
+          text.includes('queue')
         )
           if (!message.member.voiceChannel) {
             message.reply('You need to be in a voice channel to do that.');
