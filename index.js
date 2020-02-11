@@ -50,7 +50,7 @@ const playMusic = async (currentlyPlaying, connection, message) => {
       message.reply('Please join a voice channel first.');
     }
     if (text.includes('play')) {
-      if (currentlyPlaying.snippet) {
+      if (currentlyPlaying) {
         const searchString =
           text === 'sushi play'
             ? 'late night piano'
@@ -72,6 +72,7 @@ const playMusic = async (currentlyPlaying, connection, message) => {
         const video = response.data.items[0];
         message.reply(`Alright! Adding ${video.snippet.title} to the queue.`);
         songQueue.add(video);
+        return;
       } else {
         currentlyPlaying = [...songQueue][0];
         songQueue.delete(currentlyPlaying);
