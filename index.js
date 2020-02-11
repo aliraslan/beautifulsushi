@@ -10,7 +10,7 @@ const client = new Discord.Client();
 
 // SongQueue
 let songQueue = new Set();
-
+let currentlyPlaying = {};
 const helpMessage = async message => {
   const reply = `Hey! These are the commands!\n\`sushi\`: Shows a random picture of sushi.\n\`sushi show me search term\` or \`sushi send search term\`: Shows a picture fitting search term.\n\`sushi play\`: Plays some piano music.\n\`sushi play something\`: Searches for 'something' on YouTube and plays that.\n\`sushi stop\`: Stops any playing music.`;
   message.channel.send(reply);
@@ -43,58 +43,66 @@ const sendUnsplash = async message => {
   });
 };
 
-const playMusic = async (connection, message) => {
+const playMusic = async (currentlyPlaying, connection, message) => {
   try {
     const text = message.content.toLowerCase();
     if (!message.member.voiceChannel) {
       message.reply('Please join a voice channel first.');
     }
     if (text.includes('play')) {
-      const searchString =
-        text === 'sushi play'
-          ? 'late night piano'
-          : text.substring(text.indexOf('play') + 5);
-      const api = {
-        baseUrl: 'https://www.googleapis.com/youtube/v3/search?',
-        part: 'snippet',
-        type: 'video',
-        order: 'relevance',
-        maxResults: 1,
-        q: searchString,
-        key: process.env.KEY
-      };
-      // Forming the URL from the properties.
-      const apiUrl = `${api.baseUrl}part=${api.part}&type=${api.type}&maxResults=${api.maxResults}&order=${api.order}&q=${api.q}&key=${api.key}`;
-      // Querying the URL to return the video(s).
-      const response = await axios.get(apiUrl);
-      // Extract first video object
-      const video = response.data.items[0];
-      message.reply(`Alright! Adding ${video.snippet.title} to the queue.`);
-      songQueue.add(video);
-      const nextUp = [...songQueue][0];
-      songQueue.delete(video);
-      const playingEmbed = new Discord.RichEmbed()
-        .setColor('#e0aca8')
-        .setTitle(`${nextUp.snippet.title}`)
-        .setURL(`https://www.youtube.com/watch?v=${nextUp.id.videoId}`)
-        .setImage(`${nextUp.snippet.thumbnails.medium.url}`)
-        .setTimestamp();
-      // Send the Embed
-      message.channel.send(playingEmbed);
-      client.user.setActivity(`${nextUp.snippet.title}`, { type: 'STREAMING' });
-      // Create a youtube-dl stream to play
-      const stream = ytdl(
-        `https://www.youtube.com/watch?v=${nextUp.id.videoId}`,
-        {
-          filter: 'audioonly'
-        }
-      );
-      const dispatcher = connection.playStream(stream);
-      dispatcher.on('end', () => {
-        client.user.setActivity('世界一周', { type: 'WATCHING' });
-        if (songQueue.size) playMusic(connection, message);
-        else connection.disconnect();
-      });
+      if (currentlyPlaying) {
+        const searchString =
+          text === 'sushi play'
+            ? 'late night piano'
+            : text.substring(text.indexOf('play') + 5);
+        const api = {
+          baseUrl: 'https://www.googleapis.com/youtube/v3/search?',
+          part: 'snippet',
+          type: 'video',
+          order: 'relevance',
+          maxResults: 1,
+          q: searchString,
+          key: process.env.KEY
+        };
+        // Forming the URL from the properties.
+        const apiUrl = `${api.baseUrl}part=${api.part}&type=${api.type}&maxResults=${api.maxResults}&order=${api.order}&q=${api.q}&key=${api.key}`;
+        // Querying the URL to return the video(s).
+        const response = await axios.get(apiUrl);
+        // Extract first video object
+        const video = response.data.items[0];
+        message.reply(`Alright! Adding ${video.snippet.title} to the queue.`);
+        songQueue.add(video);
+      } else {
+        currentlyPlaying = [...songQueue][0];
+        songQueue.delete(currentlyPlaying);
+        const playingEmbed = new Discord.RichEmbed()
+          .setColor('#e0aca8')
+          .setTitle(`${currentlyPlaying.snippet.title}`)
+          .setURL(
+            `https://www.youtube.com/watch?v=${currentlyPlaying.id.videoId}`
+          )
+          .setImage(`${currentlyPlaying.snippet.thumbnails.medium.url}`)
+          .setTimestamp();
+        // Send the Embed
+        message.channel.send(playingEmbed);
+        client.user.setActivity(`${currentlyPlaying.snippet.title}`, {
+          type: 'STREAMING'
+        });
+        // Create a youtube-dl stream to play
+        const stream = ytdl(
+          `https://www.youtube.com/watch?v=${currentlyPlaying.id.videoId}`,
+          {
+            filter: 'audioonly'
+          }
+        );
+        const dispatcher = connection.playStream(stream);
+        dispatcher.on('end', () => {
+          client.user.setActivity('世界一周', { type: 'WATCHING' });
+          currentlyPlaying = {};
+          if (songQueue.size) playMusic(currentlyPlaying, connection, message);
+          else connection.disconnect();
+        });
+      }
     } else if (text.includes('queue')) {
       if (songQueue.size) {
         let queue = 'The current queue is: \n';
@@ -110,6 +118,7 @@ const playMusic = async (connection, message) => {
     } else if (text.includes('stop')) {
       if (message.guild.voiceConnection) {
         songQueue.clear();
+        currentlyPlaying = {};
         message.guild.voiceConnection.disconnect();
       }
     } else if (text.includes('override')) {
@@ -138,7 +147,10 @@ client.on('message', async message => {
           } else {
             message.member.voiceChannel
               .join()
-              .then(async connection => await playMusic(connection, message));
+              .then(
+                async connection =>
+                  await playMusic(currentlyPlaying, connection, message)
+              );
           }
         else await sendUnsplash(message);
       }
