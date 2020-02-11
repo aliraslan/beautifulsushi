@@ -116,7 +116,7 @@ const playMusic = async (connection, message) => {
       }
     }
   } catch (error) {
-    message.reply(error);
+    console.log(error);
   }
 };
 
