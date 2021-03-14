@@ -1,3 +1,3 @@
 # beautifulsushi
 
-a beautiful discord bot.
+a beautiful discord bot that loves sushi.
